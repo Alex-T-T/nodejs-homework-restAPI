@@ -1,9 +1,7 @@
 const isValidId = require('./isValidId');
-const { addContactValidation,
-    putContactValidation,
-    updateContactFavouriteValidation,
-    userRegisterValidation,
-userLoginValidation, updateContactSubscriptionValidation} = require('./validationMiddlware');
+const { addContactValidation, putContactValidation,
+    updateContactFavouriteValidation, userRegisterValidation,
+    userLoginValidation, updateContactSubscriptionValidation} = require('./validationMiddlewares');
 const auth = require('./auth');
 
 module.exports = {
