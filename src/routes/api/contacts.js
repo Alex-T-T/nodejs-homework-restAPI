@@ -15,19 +15,19 @@ const {controllerCheck} = require('../../utils');
 router.get('/', auth, controllerCheck(getAllContactsController));
 
 // GET contact by ID
-router.get('/:contactId', isValidId, controllerCheck(getContactController));
+router.get('/:contactId', auth, isValidId, controllerCheck(getContactController));
 
 // POST - add new contact
 router.post('/', auth, addContactValidation, controllerCheck(postContactController));
 
 // DELETE - remove contact by ID
-router.delete('/:contactId', isValidId, controllerCheck(deleteContactController));
+router.delete('/:contactId', auth, isValidId, controllerCheck(deleteContactController));
 
 // PUT - update contact by ID
-router.put('/:contactId', isValidId, putContactValidation, controllerCheck(putContactController));
+router.put('/:contactId', auth, isValidId, putContactValidation, controllerCheck(putContactController));
 
 // PATCH - update contact field 'favourite' by contact ID
-router.patch('/:contactId/favourite', isValidId, updateContactFavouriteValidation, controllerCheck(updateContactFavouriteController) ) 
+router.patch('/:contactId/favourite', auth, isValidId, updateContactFavouriteValidation, controllerCheck(updateContactFavouriteController) ) 
 
 
 module.exports = router;

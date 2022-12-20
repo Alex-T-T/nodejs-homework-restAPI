@@ -54,7 +54,6 @@ const updateContactFavouriteController = async (req, res, next) => {
     const { favourite } = req.body;
     if (favourite === null || favourite === undefined) {
         throw RequestError(400, "missing field favourite");
-
     }
     const updatedContact = await updateContactFavourite (req.params.contactId, favourite);
 
