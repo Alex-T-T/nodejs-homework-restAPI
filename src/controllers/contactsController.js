@@ -3,12 +3,15 @@ const {listContacts,
     removeContact,
     addContact,
     updateContact,
-    updateContactFavorite,
+    updateContactFavourite,
 } = require('../models');
 const {RequestError} = require('../utils');
 
 const getAllContactsController = async (req, res, next) => {
-    const contacts = await listContacts();
+    const { _id } = req.user;
+    const { page = 1, limit = 10, favourite } = req.query;
+    const skip = (page - 1) * limit;
+    const contacts = await listContacts({owner: _id}, skip, limit, favourite);
     res.status(200).json({contacts});
 };
 
@@ -23,7 +26,8 @@ const getContactController = async (req, res, next) => {
 };
 
 const postContactController = async (req, res, next) => {
-    const newContact = await addContact(req.body);
+    const { _id } = req.user;
+    const newContact = await addContact({...req.body, owner: _id});
     res.status(201).json({newContact});
 };
 
@@ -46,13 +50,12 @@ const putContactController = async (req, res, next) => {
     res.status(200).json({updatedContact, message: 'successfully updated'});
 };
 
-const updateContactFavoriteController = async (req, res, next) => {
-    const { favorite } = req.body;
-    if (favorite === null || favorite === undefined) {
-        throw RequestError(400, "missing field favorite");
-
+const updateContactFavouriteController = async (req, res, next) => {
+    const { favourite } = req.body;
+    if (favourite === null || favourite === undefined) {
+        throw RequestError(400, "missing field favourite");
     }
-    const updatedContact = await updateContactFavorite (req.params.contactId, favorite);
+    const updatedContact = await updateContactFavourite (req.params.contactId, favourite);
 
     res.status(200).json({updatedContact, message: 'successfully updated'});
 };
@@ -63,5 +66,5 @@ module.exports = {
     postContactController,
     deleteContactController,
     putContactController,
-    updateContactFavoriteController
+    updateContactFavouriteController,
 };

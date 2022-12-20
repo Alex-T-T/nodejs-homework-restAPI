@@ -4,10 +4,12 @@ const {
     removeContact,
     addContact,
     updateContact,
-    updateContactFavorite
+    updateContactFavourite,
 } = require('./contacts');
 
 const Contact = require('./contactShema');
+
+const User = require('./userSchema');
 
 
 module.exports = {
@@ -16,7 +18,8 @@ module.exports = {
     removeContact,
     addContact,
     updateContact,
-    updateContactFavorite,
+    updateContactFavourite,
     Contact,
+    User,
 }
 
