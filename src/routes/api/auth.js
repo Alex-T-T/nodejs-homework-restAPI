@@ -2,10 +2,10 @@ const express = require('express');
 // eslint-disable-next-line new-cap
 const router = express.Router();
 const { userRegisterValidation, userLoginValidation,
-    auth, updateContactSubscriptionValidation } = require('../../middlewares');
+    auth, updateContactSubscriptionValidation, upload } = require('../../middlewares');
 const { registerController, loginController,
     currentUserController, logoutUserController,
-    updateUserSubscriptionController
+    updateUserSubscriptionController, updateUserAvatarController
 } = require('../../controllers');
 const {controllerCheck} = require('../../utils'); 
 
@@ -24,5 +24,7 @@ router.post('/logout', auth, controllerCheck(logoutUserController))
 // PATCH update subscription field on User
 router.patch('/', auth, updateContactSubscriptionValidation, controllerCheck(updateUserSubscriptionController) ) 
 
+// PACH update avatar for User
+router.patch('/avatars', auth, upload.single('avatar'), controllerCheck(updateUserAvatarController))
 
 module.exports = router;
