@@ -6,6 +6,7 @@ const { SECRET_KEY } = process.env;
 const gravatar = require('gravatar'); 
 const fs = require('fs/promises');
 const path = require('path');
+const Jimp = require('jimp');
 
 // registration newUser 
 const registerController = async (req, res, next) => {
@@ -87,10 +88,14 @@ const avatarsDir = path.join(__dirname, "../../", "public", "avatars");
 const updateUserAvatarController = async (req, res, next) => {
     const { path: tempUpload, originalname } = req.file;
     const { _id } = req.user;
+    
+    const upgradeAvatar = await Jimp.read(tempUpload);
+    upgradeAvatar.resize(250, 250).write(tempUpload);
+
     const fileName = `${_id}_${originalname}`;
     const resultUpload = path.join(avatarsDir, fileName);
-    console.log(resultUpload)
     await fs.rename(tempUpload, resultUpload);
+
     const avatarURL = path.join("avatars", fileName);
     await User.findByIdAndUpdate(_id, { avatarURL });
     res.status(200).json({_id, avatarURL});
