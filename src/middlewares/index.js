@@ -3,6 +3,7 @@ const { addContactValidation, putContactValidation,
     updateContactFavouriteValidation, userRegisterValidation,
     userLoginValidation, updateContactSubscriptionValidation} = require('./validationMiddlewares');
 const auth = require('./auth');
+const upload = require('./upload');
 
 module.exports = {
     isValidId,
@@ -12,5 +13,6 @@ module.exports = {
     userRegisterValidation,
     userLoginValidation,
     auth,
-    updateContactSubscriptionValidation
+    updateContactSubscriptionValidation,
+    upload
 }

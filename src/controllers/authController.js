@@ -3,8 +3,12 @@ const { RequestError } = require('../utils');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const { SECRET_KEY } = process.env;
+const gravatar = require('gravatar'); 
+const fs = require('fs/promises');
+const path = require('path');
+const Jimp = require('jimp');
 
-
+// registration newUser 
 const registerController = async (req, res, next) => {
     const { email, password, subscription } = req.body;
     if (email === undefined || password === undefined) {
@@ -17,11 +21,14 @@ const registerController = async (req, res, next) => {
     }
     const hashPassword = await bcrypt.hash("password", 10);
 
-    const newUser = await User.create({ email, password: hashPassword, subscription });
+    const avatarURL = gravatar.url(email);
 
-    res.status(201).json({user: {email, subscription: newUser.subscription}});
+    const newUser = await User.create({ email, password: hashPassword, subscription, avatarURL });
+
+    res.status(201).json({user: {email, subscription: newUser.subscription, avatarURL}});
 };
 
+// Login
 const loginController = async (req, res, next) => {
     const { email, password } = req.body;
     if (email === undefined || password === undefined) {
@@ -50,30 +57,55 @@ const loginController = async (req, res, next) => {
 
     await User.findByIdAndUpdate(user._id, {token})
 
-    res.status(200).json({ token, user: {email, subscription: user.subscription }});
+    res.status(200).json({ token, user: {email, subscription: user.subscription, avatarURL: user.avatarURL }});
 };
 
+// get current user
 const currentUserController = async (req, res, next) => {
     const { email, subscription } = req.user;
     res.status(200).json({ email, subscription });
 }
 
+// logout
 const logoutUserController = async (req, res, next) => {
     const { _id } = req.user;
     await User.findByIdAndUpdate(_id, { token: null }); 
     res.status(204).json();
 }
 
+// update user subscription
 const updateUserSubscriptionController = async (req, res, next) => {
     const { subscription } = req.body;
     const { _id } = req.user;
     await User.findByIdAndUpdate(_id, { subscription });
     res.status(200).json({_id, subscription});
 }
+
+// update user avatar
+
+const avatarsDir = path.join(__dirname, "../../", "public", "avatars");
+
+const updateUserAvatarController = async (req, res, next) => {
+    const { path: tempUpload, originalname } = req.file;
+    const { _id } = req.user;
+    
+    const upgradeAvatar = await Jimp.read(tempUpload);
+    upgradeAvatar.resize(250, 250).write(tempUpload);
+
+    const fileName = `${_id}_${originalname}`;
+    const resultUpload = path.join(avatarsDir, fileName);
+    await fs.rename(tempUpload, resultUpload);
+
+    const avatarURL = path.join("avatars", fileName);
+    await User.findByIdAndUpdate(_id, { avatarURL });
+    res.status(200).json({_id, avatarURL});
+}
+
 module.exports = {
     registerController,
     loginController,
     currentUserController,
     logoutUserController,
-    updateUserSubscriptionController
+    updateUserSubscriptionController,
+    updateUserAvatarController
 };
