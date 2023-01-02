@@ -5,7 +5,8 @@ const { userRegisterValidation, userLoginValidation,
     auth, updateContactSubscriptionValidation, upload } = require('../../middlewares');
 const { registerController, loginController,
     currentUserController, logoutUserController,
-    updateUserSubscriptionController, updateUserAvatarController
+    updateUserSubscriptionController, updateUserAvatarController, 
+    verificationUserEmailController, secondVerificationUserEmailController,
 } = require('../../controllers');
 const {controllerCheck} = require('../../utils'); 
 
@@ -26,5 +27,11 @@ router.patch('/', auth, updateContactSubscriptionValidation, controllerCheck(upd
 
 // PACH update avatar for User
 router.patch('/avatars', auth, upload.single('avatar'), controllerCheck(updateUserAvatarController))
+
+// GET user for verificationToken
+router.get('/verify/:verificationToken', controllerCheck(verificationUserEmailController))
+
+// POST once more send letter with verificattion link
+router.post('/verify', controllerCheck(secondVerificationUserEmailController))
 
 module.exports = router;
