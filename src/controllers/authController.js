@@ -1,27 +1,15 @@
 const { User } = require('../models');
-const { RequestError } = require('../utils');
+const { RequestError, sendEmail } = require('../utils');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
-const { SECRET_KEY, SENDGRID_API_KEY } = process.env;
+const { SECRET_KEY } = process.env;
 const gravatar = require('gravatar'); 
 const fs = require('fs/promises');
 const path = require('path');
 const Jimp = require('jimp');
-const sgMail = require('@sendgrid/mail');
 const { v4: uuidv4 } = require('uuid')
 
-// registration newUser 
-    // email - SendGrid
-
-
-
-// const sendEmail = {
-//     to: 'A.Tolochko@hotmail.com',
-//     from: '0504fusion@gmail.com',
-//     subject: 'add email',
-//     html: `<h1>All will be fine!</h1> <h2> Click here to verify your email: /users/verify/: ${verificationToken}</h2>`
-// }
-
+// newUser registration 
 const registerController = async (req, res, next) => {
     const { email, password, subscription } = req.body;
     if (email === undefined || password === undefined) {
@@ -40,24 +28,15 @@ const registerController = async (req, res, next) => {
 
     const newUser = await User.create({ email, password: hashPassword, subscription, avatarURL, verificationToken });
 
-    // SendGrid
-    sgMail.setApiKey(SENDGRID_API_KEY);
-
     const message = {
         to: email,
         from: '0504Fusion@gmail.com',
         subject: 'add email',
         text: `All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a>`,
         html: `<h1>All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a></h1>`
-}
+    };
 
-    await sgMail.send(message)
-    .then(() => {
-            console.log('Email sent')
-        })
-    .catch((error) => {
-            console.error(error)
-        });
+    sendEmail(message);
 
     res.status(201).json({user: {email, subscription: newUser.subscription, avatarURL}});
 };
@@ -175,7 +154,6 @@ const secondVerificationUserEmailController = async (req, res, next) => {
 
     const verificationToken = user.verificationToken;
      // SendGrid
-    sgMail.setApiKey(SENDGRID_API_KEY);
 
     const message = {
         to: email,
@@ -183,16 +161,11 @@ const secondVerificationUserEmailController = async (req, res, next) => {
         subject: 'add email',
         text: `All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a>`,
         html: `<h1>All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a></h1>`
-}
+    };
 
-    await sgMail.send(message)
-    .then(() => {
-            console.log('Email sent')
-        })
-    .catch((error) => {
-            console.error(error)
-        });
-    res.status(200).json('Verification email sent')
+    sendEmail(message);
+
+    res.status(200).json('Verification email sent');
 }
 
 module.exports = {
