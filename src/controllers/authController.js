@@ -30,7 +30,6 @@ const registerController = async (req, res, next) => {
 
     const message = {
         to: email,
-        from: '0504Fusion@gmail.com',
         subject: 'add email',
         text: `All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a>`,
         html: `<h1>All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a></h1>`
@@ -157,7 +156,6 @@ const secondVerificationUserEmailController = async (req, res, next) => {
 
     const message = {
         to: email,
-        from: '0504Fusion@gmail.com',
         subject: 'add email',
         text: `All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a>`,
         html: `<h1>All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a></h1>`
