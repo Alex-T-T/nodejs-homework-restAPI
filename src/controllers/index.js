@@ -14,6 +14,8 @@ const {
     logoutUserController,
     updateUserSubscriptionController,
     updateUserAvatarController,
+    verificationUserEmailController,
+    secondVerificationUserEmailController,
 } = require('./authController');
 
 module.exports = {
@@ -28,5 +30,7 @@ module.exports = {
     currentUserController,
     logoutUserController,
     updateUserSubscriptionController,
-    updateUserAvatarController
+    updateUserAvatarController,
+    verificationUserEmailController,
+    secondVerificationUserEmailController,
 }

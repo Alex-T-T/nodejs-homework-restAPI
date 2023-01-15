@@ -1,5 +1,5 @@
 const { User } = require('../models');
-const { RequestError } = require('../utils');
+const { RequestError, sendEmail, verificationMessage } = require('../utils');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const { SECRET_KEY } = process.env;
@@ -7,8 +7,9 @@ const gravatar = require('gravatar');
 const fs = require('fs/promises');
 const path = require('path');
 const Jimp = require('jimp');
+const { v4: uuidv4 } = require('uuid')
 
-// registration newUser 
+// newUser registration 
 const registerController = async (req, res, next) => {
     const { email, password, subscription } = req.body;
     if (email === undefined || password === undefined) {
@@ -23,7 +24,13 @@ const registerController = async (req, res, next) => {
 
     const avatarURL = gravatar.url(email);
 
-    const newUser = await User.create({ email, password: hashPassword, subscription, avatarURL });
+    const verificationToken = uuidv4();
+
+    const newUser = await User.create({ email, password: hashPassword, subscription, avatarURL, verificationToken });
+
+    const message = verificationMessage(email, verificationToken);
+
+    sendEmail(message);
 
     res.status(201).json({user: {email, subscription: newUser.subscription, avatarURL}});
 };
@@ -45,6 +52,10 @@ const loginController = async (req, res, next) => {
 
     if (!checkedpassword) {
         throw RequestError(401, "Email or password is wrong");
+    }
+
+    if (!user.verify) {
+        throw RequestError(403, "Not verifyed");
     }
 
     // create token
@@ -101,11 +112,57 @@ const updateUserAvatarController = async (req, res, next) => {
     res.status(200).json({_id, avatarURL});
 }
 
+const verificationUserEmailController = async (req, res, next) => {
+    const { verificationToken } = req.params;
+
+    if (!verificationToken) {
+        throw RequestError(400, "Verification failed");
+    }
+
+    const user = await User.findOne({ verificationToken })
+
+    if (!user) {
+        throw RequestError(404, "User not found");
+    }
+
+    await User.findOneAndUpdate(user._id, { verificationToken: null, verify: true})
+
+    res.status(200).json('Verification successful')
+}
+
+const secondVerificationUserEmailController = async (req, res, next) => {
+    const { email } = req.body;
+    if (email === undefined) {
+        throw RequestError(400, "missing require fields")
+    }
+
+    const user = await User.findOne({ email });
+        
+    if (!user) {
+        throw RequestError(401, "Email is wrong");
+    }
+
+    if (user.verify) {
+        throw RequestError(400, "Verification has already been passed");
+    }
+
+    const verificationToken = user.verificationToken;
+    
+    // SendGrid
+    const message = verificationMessage(email, verificationToken);
+
+    sendEmail(message);
+
+    res.status(200).json('Verification email sent');
+}
+
 module.exports = {
     registerController,
     loginController,
     currentUserController,
     logoutUserController,
     updateUserSubscriptionController,
-    updateUserAvatarController
+    updateUserAvatarController,
+    verificationUserEmailController,
+    secondVerificationUserEmailController,
 };
