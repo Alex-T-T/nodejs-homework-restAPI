@@ -1,5 +1,5 @@
 const { User } = require('../models');
-const { RequestError, sendEmail } = require('../utils');
+const { RequestError, sendEmail, verificationMessage } = require('../utils');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const { SECRET_KEY } = process.env;
@@ -28,12 +28,7 @@ const registerController = async (req, res, next) => {
 
     const newUser = await User.create({ email, password: hashPassword, subscription, avatarURL, verificationToken });
 
-    const message = {
-        to: email,
-        subject: 'add email',
-        text: `All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a>`,
-        html: `<h1>All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a></h1>`
-    };
+    const message = verificationMessage(email, verificationToken);
 
     sendEmail(message);
 
@@ -152,14 +147,9 @@ const secondVerificationUserEmailController = async (req, res, next) => {
     }
 
     const verificationToken = user.verificationToken;
-     // SendGrid
-
-    const message = {
-        to: email,
-        subject: 'add email',
-        text: `All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a>`,
-        html: `<h1>All will be fine! Click here to verify your email: <a href='http://localhost:3000/api/users/verify/:${verificationToken}' target='_blank' >Click on me</a></h1>`
-    };
+    
+    // SendGrid
+    const message = verificationMessage(email, verificationToken);
 
     sendEmail(message);
 
