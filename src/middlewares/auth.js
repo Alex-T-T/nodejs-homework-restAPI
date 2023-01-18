@@ -10,7 +10,8 @@ const auth = async (req, res, next) => {
     console.log('token =>', token)
     console.log('bearer =>', bearer)
 
-    if (bearer !== "Bearer") {
+    try {
+        if (bearer !== "Bearer") {
         next(RequestError(401, "Not authorized"))
     }
 
@@ -33,6 +34,36 @@ const auth = async (req, res, next) => {
 
     req.user = user;
     next()
+    } catch (error) {
+        if (error.message === "Invalid signature") {
+            error.status = 401
+        }
+        next(error)
+    }
+
+    // if (bearer !== "Bearer") {
+    //     next(RequestError(401, "Not authorized"))
+    // }
+
+    // if (!token) {
+    //     next(RequestError(401, "Not authorized"))
+    //     return
+    // }
+
+    // const { id } = jwt.verify(token, SECRET_KEY);
+
+    // if (!id) {
+    //     next(RequestError(401, "Not authorized"))
+    // }
+
+    // const user = await User.findById(id);
+
+    // if (!user || !user.token) {
+    //     next(RequestError(401, "Not authorized"))
+    // }
+
+    // req.user = user;
+    // next()
 }
 
 module.exports = auth;
