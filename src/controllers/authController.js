@@ -20,7 +20,8 @@ const registerController = async (req, res, next) => {
     if (user) {
         throw RequestError(409, "Email in use");
     }
-    const hashPassword = await bcrypt.hash("password", 10);
+
+    const hashPassword = await bcrypt.hash(password, 10);
 
     const avatarURL = gravatar.url(email);
 
@@ -48,14 +49,14 @@ const loginController = async (req, res, next) => {
         throw RequestError(401, "Email or password is wrong");
     }
 
-    const checkedpassword = bcrypt.compare(password, user.password);
+    if (!user.verify) {
+        throw RequestError(403, "Not verifyed");
+    }
+
+    const checkedpassword = await bcrypt.compare(password, user.password);
 
     if (!checkedpassword) {
         throw RequestError(401, "Email or password is wrong");
-    }
-
-    if (!user.verify) {
-        throw RequestError(403, "Not verifyed");
     }
 
     // create token
